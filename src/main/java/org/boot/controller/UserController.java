@@ -17,8 +17,8 @@ public class UserController {
 
     // 회원가입 페이지로 이동
     @GetMapping("/signup")
-    public String signupForm() {
-        return "signup";  // src/main/resources/templates/signup.html
+    public String signUpPage() {
+        return "SignUpPage";
     }
     // 회원가입 처리
     @PostMapping("/register")
@@ -29,10 +29,10 @@ public class UserController {
             //return "redirect:/login";
             // 성공 메시지 전달
             model.addAttribute("message", result);
-            return "signup";
+            return "SignUpPage";
         } else {
             model.addAttribute("message", result);
-            return "signup";
+            return "SignUpPage";
         }
     }
 
