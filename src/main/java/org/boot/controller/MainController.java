@@ -19,17 +19,16 @@ public class MainController {
             model.addAttribute("userId", loggedInUser.getUserId());
             model.addAttribute("userName", loggedInUser.getUserName());
         } else {  // 로그인되지 않은 경우
-            return "redirect:/user/loginPage"; // 로그인 페이지로 이동
+            return "redirect:/user/loginPage";
         }
-
-        return "mainPage"; // mainPage.html로 이동
+        return "mainPage";
     }
 
     // 로그아웃 기능
     @GetMapping("/user/logout")
     public String logout(HttpSession session) {
         session.invalidate(); // 세션 삭제 (로그아웃)
-        return "redirect:/user/loginPage"; // 로그인 페이지로 이동
+        return "redirect:/user/loginPage";
     }
 
 }
