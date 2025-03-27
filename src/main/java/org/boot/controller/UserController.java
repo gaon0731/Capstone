@@ -1,11 +1,7 @@
 package org.boot.controller;
 
 
-import org.boot.dto.UserDTO;
-import org.boot.dto.LoginRequest;
-import org.boot.dto.LoginResponse;
-import org.boot.dto.CheckIdResponse;
-import org.boot.dto.RegisterResponse;
+import org.boot.dto.*;
 import org.boot.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -35,11 +31,23 @@ public class UserController {
         }
     }
     @PostMapping("/api/users/register")
-    public ResponseEntity<RegisterResponse> register(@RequestBody UserDTO userDTO) {
+    public ResponseEntity<RegisterResponse> register(@RequestBody RegisterRequest registerRequest) {
+        // pw & pw 재확인 비교
+        if (!registerRequest.getUserPassword().equals(registerRequest.getUserPasswordConfirm())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new RegisterResponse(false, "Passwords do not match."));
+        }
+
+        // UserDTO 객체 생성
+        UserDTO userDTO = new UserDTO();
+        userDTO.setUserId(registerRequest.getUserId());
+        userDTO.setUserPassword(registerRequest.getUserPassword());
+        userDTO.setUserName(registerRequest.getUserName());
+
         // id 중복 체크
         if (userService.isUserIdExists(userDTO.getUserId())) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body(new RegisterResponse(false, "userId already exists."));
+                    .body(new RegisterResponse(false, "ID already exists."));
         }
 
         RegisterResponse response = userService.register(userDTO);
@@ -68,7 +76,6 @@ public class UserController {
         // 로그인 실패 시
         LoginResponse response = new LoginResponse(false, "Invalid ID or PW");
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response); // 401
-
     }
 
 }

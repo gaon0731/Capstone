@@ -9,9 +9,11 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class RegisterResponse {
+public class RegisterRequest {
 
-    private boolean success;
-    private String message;
+    private String userId;
+    private String userPassword;
+    private String userPasswordConfirm; // 비밀번호 재확인
+    private String userName;
 
 }
