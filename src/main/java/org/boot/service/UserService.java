@@ -45,16 +45,10 @@ public class UserService {
     // 로그인 기능
     public boolean login(String userId, String userPassword) {
         Optional<User> userOptional = userRepository.findByUserId(userId);
-        if (userOptional.isPresent()) {
-            User user = userOptional.get();
-            if (user.getUserPassword().equals(userPassword)) {  // 암호화 x (추후 암호화 해야 함)
-                session.setAttribute("loggedInUser", user);  // 로그인 성공 시 세션에 사용자 정보 저장
-                System.out.println("로그인 성공, 세션 저장됨 : " + session.getAttribute("loggedInUser"));
-                return true;
-            }
+        if (!userOptional.isPresent() || !userOptional.get().getUserPassword().equals(userPassword)) {
+            return false;
         }
-        System.out.println("로그인 실패, 세션 저장 안 됨");
-        return false;
+        return true;
     }
 
     // 로그아웃 기능

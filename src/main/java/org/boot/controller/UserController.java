@@ -1,6 +1,9 @@
 package org.boot.controller;
 
+
 import org.boot.dto.UserDTO;
+import org.boot.dto.LoginRequest;
+import org.boot.dto.LoginResponse;
 import org.boot.dto.CheckIdResponse;
 import org.boot.dto.RegisterResponse;
 import org.boot.service.UserService;
@@ -52,12 +55,20 @@ public class UserController {
         return "loginPage";
     }
     @PostMapping("/api/users/login") // session : 로그인 유지
-    public String login(@RequestParam String userId, @RequestParam String userPassword) {
+    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest) {
+        String userId = loginRequest.getUserId();
+        String userPassword = loginRequest.getUserPassword();
+
         boolean isLoginSuccess = userService.login(userId, userPassword);
+        // 로그인 성공 시
         if (isLoginSuccess) {
-            return "redirect:/mainPage";
+            LoginResponse response = new LoginResponse(true, "Login success.");
+            return ResponseEntity.ok(response); // 200
         }
-        return "loginPage";
+        // 로그인 실패 시
+        LoginResponse response = new LoginResponse(false, "Invalid ID or PW");
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response); // 401
+
     }
 
 }
