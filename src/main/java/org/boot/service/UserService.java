@@ -21,7 +21,6 @@ public class UserService {
     // id 중복 확인 기능
     public boolean isUserIdExists(String userId) {
         return userRepository.existsByUserId(userId);
-
     }
 
     // 회원가입 기능
@@ -45,9 +44,14 @@ public class UserService {
     // 로그인 기능
     public boolean login(String userId, String userPassword) {
         Optional<User> userOptional = userRepository.findByUserId(userId);
+
         if (!userOptional.isPresent() || !userOptional.get().getUserPassword().equals(userPassword)) {
             return false;
         }
+
+        User user = userOptional.get();
+        session.setAttribute("currentUser", user); // 세션 저장
+
         return true;
     }
 
