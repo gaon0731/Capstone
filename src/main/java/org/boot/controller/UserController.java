@@ -1,6 +1,5 @@
 package org.boot.controller;
 
-
 import org.boot.dto.*;
 import org.boot.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,21 +22,21 @@ public class UserController {
     public ResponseEntity<CheckIdResponse> checkUserId(@RequestParam String userId) {
         boolean exists = userService.isUserIdExists(userId);
         CheckIdResponse response = new CheckIdResponse(!exists, exists ? "userId already exists." : "You can use this userId");
-
         if (exists) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(response); // 409
         } else {
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok(response); // 200
         }
     }
     @PostMapping("/api/users/register")
     public ResponseEntity<RegisterResponse> register(@RequestBody RegisterRequest registerRequest) {
-        // pw & pw 재확인 일치/불일치 체크
+        // pw & pw 확인 일치/불일치 체크
         if (!registerRequest.getUserPassword().equals(registerRequest.getUserPasswordConfirm())) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new RegisterResponse(false, "Passwords do not match."));
+                    .body(new RegisterResponse(false, "Passwords do not match.")); // 400
         }
 
+        // RegisterRequest -> UserDTO 로 변환
         UserDTO userDTO = new UserDTO();
         userDTO.setUserId(registerRequest.getUserId());
         userDTO.setUserPassword(registerRequest.getUserPassword());
@@ -46,11 +45,12 @@ public class UserController {
         // id 중복 체크
         if (userService.isUserIdExists(userDTO.getUserId())) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body(new RegisterResponse(false, "userId already exists."));
+                    .body(new RegisterResponse(false, "userId already exists.")); // 409
         }
 
+        // 회원가입 성공 시
         RegisterResponse response = userService.register(userDTO);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(response); // 200
     }
 
     @GetMapping("/")
@@ -61,7 +61,7 @@ public class UserController {
     public String showLoginPage() {
         return "loginPage";
     }
-    @PostMapping("/api/users/login") // session : 로그인 유지
+    @PostMapping("/api/users/login")
     public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest) {
         String userId = loginRequest.getUserId();
         String userPassword = loginRequest.getUserPassword();
