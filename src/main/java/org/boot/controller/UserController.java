@@ -32,13 +32,12 @@ public class UserController {
     }
     @PostMapping("/api/users/register")
     public ResponseEntity<RegisterResponse> register(@RequestBody RegisterRequest registerRequest) {
-        // pw & pw 재확인 비교
+        // pw & pw 재확인 일치/불일치 체크
         if (!registerRequest.getUserPassword().equals(registerRequest.getUserPasswordConfirm())) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(new RegisterResponse(false, "Passwords do not match."));
         }
 
-        // UserDTO 객체 생성
         UserDTO userDTO = new UserDTO();
         userDTO.setUserId(registerRequest.getUserId());
         userDTO.setUserPassword(registerRequest.getUserPassword());
@@ -47,7 +46,7 @@ public class UserController {
         // id 중복 체크
         if (userService.isUserIdExists(userDTO.getUserId())) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body(new RegisterResponse(false, "ID already exists."));
+                    .body(new RegisterResponse(false, "userId already exists."));
         }
 
         RegisterResponse response = userService.register(userDTO);
