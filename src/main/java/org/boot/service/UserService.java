@@ -27,7 +27,7 @@ public class UserService {
     public RegisterResponse register(UserDTO userDTO) {
         // id 중복 확인
         if (userRepository.existsByUserId(userDTO.getUserId())) {
-            return new RegisterResponse(false, "ID already exists");
+            return new RegisterResponse(false, "userId already exists.");
         }
 
         // dto -> entity 로 변환
@@ -38,7 +38,7 @@ public class UserService {
 
         userRepository.save(user);
 
-        return new RegisterResponse(true, "User created");
+        return new RegisterResponse(true, "User created.");
     }
 
     // 로그인 기능

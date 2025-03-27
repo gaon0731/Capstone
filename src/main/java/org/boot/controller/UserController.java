@@ -21,7 +21,7 @@ public class UserController {
     @GetMapping("/api/users/check-id")
     public ResponseEntity<CheckIdResponse> checkUserId(@RequestParam String userId) {
         boolean exists = userService.isUserIdExists(userId);
-        CheckIdResponse response = new CheckIdResponse(!exists, exists ? "userId already exists." : "You can use this userId");
+        CheckIdResponse response = new CheckIdResponse(!exists, exists ? "userId already exists." : "You can use this userId.");
         if (exists) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(response); // 409
         } else {
@@ -73,7 +73,7 @@ public class UserController {
             return ResponseEntity.ok(response); // 200
         }
         // 로그인 실패 시
-        LoginResponse response = new LoginResponse(false, "Invalid ID or PW");
+        LoginResponse response = new LoginResponse(false, "Invalid ID or PW.");
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response); // 401
     }
 
