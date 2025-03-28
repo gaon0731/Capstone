@@ -1,31 +1,31 @@
 package org.boot.service;
 
 import jakarta.servlet.http.HttpSession;
+import lombok.RequiredArgsConstructor;
 import org.boot.dto.UserDTO;
 import org.boot.dto.RegisterResponse;
 import org.boot.entity.User;
 import org.boot.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
+    private final HttpSession session;
+    private final PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private HttpSession session;
-
-    // id 중복 확인 기능
+    // 아이디 중복 확인 기능
     public boolean isUserIdExists(String userId) {
         return userRepository.existsByUserId(userId);
     }
 
     // 회원가입 기능
     public RegisterResponse register(UserDTO userDTO) {
-        // id 중복 확인
+        // 아이디 중복 확인
         if (userRepository.existsByUserId(userDTO.getUserId())) {
             return new RegisterResponse(false, "userId already exists.");
         }
@@ -33,7 +33,7 @@ public class UserService {
         // dto -> entity 로 변환
         User user = new User();
         user.setUserId(userDTO.getUserId());
-        user.setUserPassword(userDTO.getUserPassword());
+        user.setUserPassword(passwordEncoder.encode(userDTO.getUserPassword())); // 비밀번호 암호화
         user.setUserName(userDTO.getUserName());
 
         userRepository.save(user);
@@ -45,13 +45,19 @@ public class UserService {
     public boolean login(String userId, String userPassword) {
         Optional<User> userOptional = userRepository.findByUserId(userId);
 
-        if (!userOptional.isPresent() || !userOptional.get().getUserPassword().equals(userPassword)) {
+        // 사용자 없음
+        if (userOptional.isEmpty()) {
             return false;
         }
 
         User user = userOptional.get();
-        session.setAttribute("currentUser", user); // 세션 저장
 
+        // 비밀번호 불일치
+        if (!passwordEncoder.matches(userPassword, user.getUserPassword())) {
+            return false;
+        }
+
+        session.setAttribute("currentUser", user); // 세션 저장
         return true;
     }
 

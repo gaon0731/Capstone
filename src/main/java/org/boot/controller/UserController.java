@@ -30,6 +30,10 @@ public class UserController {
     }
     @PostMapping("/api/users/register")
     public ResponseEntity<RegisterResponse> register(@RequestBody RegisterRequest registerRequest) {
+        // 디버깅을 위한 로그 추가
+        System.out.println("Received Password: " + registerRequest.getUserPassword());
+        System.out.println("Received Password Confirm: " + registerRequest.getUserPasswordConfirm());
+
         // pw & pw 확인 일치/불일치 체크
         if (!registerRequest.getUserPassword().equals(registerRequest.getUserPasswordConfirm())) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
