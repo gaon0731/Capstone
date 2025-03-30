@@ -2,14 +2,13 @@ package org.boot.controller;
 
 import org.boot.entity.User;
 import jakarta.servlet.http.HttpSession;
-import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.*;
 
-@Controller
+@RestController
+@RequestMapping("/api/users/{userId}")
 public class MainController {
 
-    // 메인 페이지로 이동
     @GetMapping("/mainPage")
     public String mainPage(Model model, HttpSession session) {
         // 세션에서 로그인한 사용자 정보 가져오기
