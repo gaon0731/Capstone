@@ -1,20 +1,26 @@
 package org.boot.controller;
 
+import lombok.RequiredArgsConstructor;
 import org.boot.dto.*;
 import org.boot.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-@RestController
-@RequestMapping("/api/users")
+@Controller
+//@RequestMapping("/api/users")
+@RequiredArgsConstructor
 public class UserController {
 
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
 
-    @GetMapping("/check-id")
+    @GetMapping("/api/users/signup")
+    public String showSignUpPage() {
+        return "signupPage";
+    }
+
+    @GetMapping("/api/users/check-id")
     public ResponseEntity<CheckIdResponse> checkUserId(@RequestParam String userId) {
         boolean exists = userService.isUserIdExists(userId);
         CheckIdResponse response = new CheckIdResponse(!exists, exists ? "userId already exists." : "You can use this userId.");
@@ -25,7 +31,7 @@ public class UserController {
         }
     }
 
-    @PostMapping("/register")
+    @PostMapping("/api/users/register")
     public ResponseEntity<RegisterResponse> register(@RequestBody RegisterRequest registerRequest) {
         // pw & pw 확인 일치/불일치 체크
         if (!registerRequest.getUserPassword().equals(registerRequest.getUserPasswordConfirm())) {
@@ -48,22 +54,6 @@ public class UserController {
         // 회원가입 성공 시
         RegisterResponse response = userService.register(userDTO);
         return ResponseEntity.ok(response); // 200
-    }
-
-    @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest) {
-        String userId = loginRequest.getUserId();
-        String userPassword = loginRequest.getUserPassword();
-
-        boolean isLoginSuccess = userService.login(userId, userPassword);
-        // 로그인 성공 시
-        if (isLoginSuccess) {
-            LoginResponse response = new LoginResponse(true, "Login success.");
-            return ResponseEntity.ok(response); // 200
-        }
-        // 로그인 실패 시
-        LoginResponse response = new LoginResponse(false, "Invalid ID or PW.");
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response); // 401
     }
 
 }

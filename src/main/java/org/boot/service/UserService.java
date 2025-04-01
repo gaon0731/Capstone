@@ -1,6 +1,5 @@
 package org.boot.service;
 
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.boot.dto.UserDTO;
 import org.boot.dto.RegisterResponse;
@@ -15,7 +14,6 @@ import java.util.Optional;
 public class UserService {
 
     private final UserRepository userRepository;
-    private final HttpSession session;
     private final PasswordEncoder passwordEncoder;
 
     // 아이디 중복 확인 기능
@@ -57,13 +55,7 @@ public class UserService {
             return false;
         }
 
-        session.setAttribute("currentUser", user); // 세션 저장
         return true;
-    }
-
-    // 로그아웃 기능
-    public void logout() {
-        session.invalidate(); // 세션 종료
     }
 
 }

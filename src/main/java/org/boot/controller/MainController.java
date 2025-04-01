@@ -9,25 +9,5 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/users/{userId}")
 public class MainController {
 
-    @GetMapping("/mainPage")
-    public String mainPage(Model model, HttpSession session) {
-        // 세션에서 로그인한 사용자 정보 가져오기
-        User loggedInUser = (User) session.getAttribute("loggedInUser");
-
-        if (loggedInUser != null) {  // 로그인된 사용자일 경우
-            model.addAttribute("userId", loggedInUser.getUserId());
-            model.addAttribute("userName", loggedInUser.getUserName());
-        } else {  // 로그인되지 않은 경우
-            return "loginPage";
-        }
-        return "mainPage";
-    }
-
-    // 로그아웃 기능
-    @GetMapping("/api/users/logout")
-    public String logout(HttpSession session) {
-        session.invalidate(); // 세션 삭제 (로그아웃)
-        return "loginPage";
-    }
 
 }
