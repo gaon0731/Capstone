@@ -42,10 +42,6 @@ public class JwtUtil {
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
 
-        // 로그로 토큰을 출력
-        log.info("Access Token: {}", accessToken);
-        log.info("Refresh Token: {}", refreshToken);
-
         return JwtDTO.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)

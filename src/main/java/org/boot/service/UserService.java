@@ -5,6 +5,8 @@ import org.boot.dto.UserDTO;
 import org.boot.dto.RegisterResponse;
 import org.boot.entity.User;
 import org.boot.repository.UserRepository;
+import org.boot.security.JwtDTO;
+import org.boot.security.JwtUtil;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.util.Optional;
@@ -15,6 +17,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtUtil jwtUtil;
 
     // 아이디 중복 확인 기능
     public boolean isUserIdExists(String userId) {
@@ -25,7 +28,7 @@ public class UserService {
     public RegisterResponse register(UserDTO userDTO) {
         // 아이디 중복 확인
         if (userRepository.existsByUserId(userDTO.getUserId())) {
-            return new RegisterResponse(false, "userId already exists.");
+            return new RegisterResponse(false, "userId already exists.", null, null);
         }
 
         // dto -> entity 로 변환
@@ -36,7 +39,12 @@ public class UserService {
 
         userRepository.save(user);
 
-        return new RegisterResponse(true, "User created.");
+        // jwt 토큰 생성
+        JwtDTO jwtDTO = jwtUtil.generateToken(userDTO.getUserId());
+        String accessToken = jwtDTO.getAccessToken();
+        String refreshToken = jwtDTO.getRefreshToken();
+
+        return new RegisterResponse(true, "User created.", accessToken, refreshToken);
     }
 
     // 로그인 기능
