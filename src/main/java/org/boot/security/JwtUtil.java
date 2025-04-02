@@ -12,11 +12,14 @@ import org.springframework.stereotype.Component;
 
 import java.security.Key;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 @Slf4j
 @Component
 public class JwtUtil {
 
+    private final Set<String> blacklistedTokens = new HashSet<>();
     public final Key key;
 
     // application.yml 에서 secret 값 가져와서 key 에 저장
