@@ -17,7 +17,6 @@ public class PlanService {
 
     private final PlanRepository planRepository;
     private final UserRepository userRepository;
-    private final JwtUtil jwtUtil;
 
     @Transactional
     public AddPlanResponse addPlan(String userId, PlanDTO planDTO) {

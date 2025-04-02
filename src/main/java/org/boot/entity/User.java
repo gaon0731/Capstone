@@ -28,7 +28,7 @@ public class User {
     @Column(name = "user_name", nullable = false, length = 20)
     private String userName;
 
-    //
+    // refresh token
     @Column(name="refresh_token")
     private String refreshToken;
 
