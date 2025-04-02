@@ -116,7 +116,7 @@ public class JwtUtil {
         }
     }
 
-    // JWT 토큰에서 userId(= subject) 문자열 추출하는 메서드
+    // JWT 토큰에서 userId 문자열 추출하는 메서드
     public String extractUserId(String token) {
 
         token = token.substring(7);
