@@ -31,7 +31,7 @@ public class AuthController {
         if (isLoginSuccess) {
             // JwtDTO 객체에서 accessToken 추출
             JwtDTO jwtDTO = jwtUtil.generateToken(userId);
-            String accessToken = jwtDTO.getAccessToken();  // JwtDTO 에서 accessToken 을 추출
+            String accessToken = jwtDTO.getAccessToken();  // JwtDTO에서 accessToken을 추출
             String refreshToken = jwtDTO.getRefreshToken();
 
             userService.updateRefreshToken(userId, refreshToken);
@@ -73,56 +73,21 @@ public class AuthController {
         return ResponseEntity.ok(response); // 200
     }
 
-    // AccessToken && RefreshToken 재발급
-    @PostMapping("/reissue-token")
-    public ResponseEntity<RefreshResponse> refresh(@RequestHeader("Authorization") String refreshToken) {
-        String userId;
-        try {
-            // RefreshToken 에서 userId 추출
-            userId = jwtUtil.parseClaims(refreshToken).getSubject();
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new RefreshResponse(false, "Invalid token.", null, null)); // 401
-        }
-
-        // DB 에서 저장된 RefreshToken 가져오기
-        Optional<String> storedRefreshToken = userService.getRefreshTokenByUserId(userId);
-
-        if (storedRefreshToken.isEmpty() || !storedRefreshToken.get().equals(refreshToken)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new RefreshResponse(false, "RefreshToken does not match.", null, null)); // 401
-        }
-
-        // RefreshToken 이 유효한지 확인
-        boolean isRefreshTokenValid = jwtUtil.validateToken(refreshToken);
-
-        if (isRefreshTokenValid) {
-            String newAccessToken = jwtUtil.generateAccessToken(userId);
-            return ResponseEntity.status(HttpStatus.OK).body(new RefreshResponse(true, "AccessToken has been reissued.", newAccessToken, refreshToken));
-        } else {
-            JwtDTO newTokens = jwtUtil.generateToken(userId);
-
-            userService.updateRefreshToken(userId, newTokens.getRefreshToken());
-
-            return ResponseEntity.status(HttpStatus.OK).body(new RefreshResponse(true, "Both AccessToken and RefreshToken have been reissued.", newTokens.getAccessToken(), newTokens.getRefreshToken()));
-        }
-    }
-
-
     @PostMapping("/logout")
-    public ResponseEntity<String> logout(@RequestHeader("Authorization") String bearerToken) {
+    public ResponseEntity<String> logout(@RequestHeader("Authorization") String accessToken) {
         // Authorization 헤더에서 Bearer 토큰을 추출
-        String token = bearerToken.substring(7);
 
-        if (!jwtUtil.validateToken(bearerToken)) {
+        if (!jwtUtil.validateToken(accessToken)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token.");
         }
 
         // 토큰을 블랙리스트에 추가하여 로그아웃 처리
-        jwtUtil.blacklistToken(token);
+        jwtUtil.blacklistToken(accessToken);
 
         return ResponseEntity.ok("Logged out successfully.");
     }
 
-    @DeleteMapping("/delete")
+    @DeleteMapping("/delete-user")
     public ResponseEntity<String> deleteUser(@RequestHeader("Authorization") String accessToken) {
         String userId;
 
@@ -130,11 +95,8 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token.");
         }
 
-        try {
-            // accessToken 에서 userId 추출
-            userId = jwtUtil.parseClaims(accessToken).getSubject();
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token.");
+        else {
+            userId = jwtUtil.extractUserId(accessToken);
         }
 
         boolean isDeleted = userService.deleteUser(userId);
@@ -143,6 +105,38 @@ public class AuthController {
             return ResponseEntity.ok("User deleted successfully.");
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found.");
+        }
+    }
+
+
+    // AccessToken/RefreshToken 재발급
+    @PostMapping("/reissue-token")
+    public ResponseEntity<RefreshResponse> reissueToken(@RequestHeader("Authorization") String refreshToken) {
+        String userId;
+
+        userId = jwtUtil.extractUserId(refreshToken);
+
+        if (refreshToken == null || !refreshToken.startsWith("Bearer ")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new RefreshResponse(false, "Invalid token.", null, null));
+        }
+
+        // DB에서 저장된 RefreshToken 가져오기
+        Optional<String> storedRefreshToken = userService.getRefreshTokenByUserId(userId);
+
+        if (storedRefreshToken.isEmpty() || !storedRefreshToken.get().equals(refreshToken)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new RefreshResponse(false, "RefreshToken does not match.", null, null));
+        }
+
+        // RefreshToken이 유효한지 확인
+        if (!jwtUtil.validateToken(refreshToken)) {
+            String newAccessToken = jwtUtil.generateAccessToken(userId);
+            return ResponseEntity.status(HttpStatus.OK).body(new RefreshResponse(true, "AccessToken has been reissued.", newAccessToken, refreshToken));
+        } else {
+            JwtDTO newTokens = jwtUtil.generateToken(userId);
+
+            userService.updateRefreshToken(userId, newTokens.getRefreshToken());
+
+            return ResponseEntity.status(HttpStatus.OK).body(new RefreshResponse(true, "Both AccessToken and RefreshToken have been reissued.", newTokens.getAccessToken(), newTokens.getRefreshToken()));
         }
     }
 

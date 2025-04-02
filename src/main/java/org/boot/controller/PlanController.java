@@ -24,11 +24,9 @@ public class PlanController {
 
         String token = httpRequest.getHeader("Authorization");
 
-        if (token == null || !token.startsWith("Bearer ")) {
+        if(!jwtUtil.validateToken(token)) {
             return ResponseEntity.badRequest().body(new AddPlanResponse(false, "Invalid token."));
         }
-
-        token = token.substring(7);
 
         // jwt 에서 userId 문자열 가져오기
         String userId = jwtUtil.extractUserId(token);

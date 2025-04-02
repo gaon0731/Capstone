@@ -67,6 +67,7 @@ public class JwtUtil {
                 .compact();
 
         return JwtDTO.builder()
+                .grantType("Bearer")
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .build();
@@ -74,6 +75,16 @@ public class JwtUtil {
 
     // 토큰 정보를 검증하는 메서드
     public boolean validateToken(String token) {
+        if (token == null || !token.startsWith("Bearer ")) {
+            return false;
+        }
+
+        token = token.substring(7);
+
+        if (blacklistedTokens.contains(token)) {
+            return false;
+        }
+
         try {
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
             return true;
@@ -104,12 +115,18 @@ public class JwtUtil {
 
     // JWT 토큰에서 userId(= subject) 문자열 추출하는 메서드
     public String extractUserId(String token) {
+
+        token = token.substring(7);
+
         Claims claims = parseClaims(token);
         return claims.getSubject();
     }
 
     // 로그아웃 시 토큰 블랙리스트에 추가
     public void blacklistToken(String token) {
+
+        token = token.substring(7);
+
         blacklistedTokens.add(token);
     }
 
