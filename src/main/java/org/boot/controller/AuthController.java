@@ -75,7 +75,7 @@ public class AuthController {
 
     // AccessToken && RefreshToken 재발급
     @PostMapping("/reissue-token")
-    public ResponseEntity<RefreshResponse> refresh(@RequestParam String refreshToken) {
+    public ResponseEntity<RefreshResponse> refresh(@RequestHeader("Authorization") String refreshToken) {
         String userId;
         try {
             // RefreshToken 에서 userId 추출
@@ -104,13 +104,17 @@ public class AuthController {
 
             return ResponseEntity.status(HttpStatus.OK).body(new RefreshResponse(true, "Both AccessToken and RefreshToken have been reissued.", newTokens.getAccessToken(), newTokens.getRefreshToken()));
         }
-
     }
+
 
     @PostMapping("/logout")
     public ResponseEntity<String> logout(@RequestHeader("Authorization") String bearerToken) {
         // Authorization 헤더에서 Bearer 토큰을 추출
         String token = bearerToken.substring(7);
+
+        if (!jwtUtil.validateToken(bearerToken)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token.");
+        }
 
         // 토큰을 블랙리스트에 추가하여 로그아웃 처리
         jwtUtil.blacklistToken(token);
@@ -118,8 +122,21 @@ public class AuthController {
         return ResponseEntity.ok("Logged out successfully.");
     }
 
-    @DeleteMapping("/{userId}/delete")
-    public ResponseEntity<String> deleteUser(@PathVariable String userId) {
+    @DeleteMapping("/delete")
+    public ResponseEntity<String> deleteUser(@RequestHeader("Authorization") String accessToken) {
+        String userId;
+
+        if (!jwtUtil.validateToken(accessToken)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token.");
+        }
+
+        try {
+            // accessToken 에서 userId 추출
+            userId = jwtUtil.parseClaims(accessToken).getSubject();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token.");
+        }
+
         boolean isDeleted = userService.deleteUser(userId);
 
         if (isDeleted) {
