@@ -18,9 +18,8 @@ public class PlanController {
     private final PlanService planService;
     private final JwtUtil jwtUtil;
 
-    @PostMapping("/{userId}/add-plan")
+    @PostMapping("/add-plan")
     public ResponseEntity<AddPlanResponse> addPlan(
-            @PathVariable String userId, // url 에서 userId 추출
             @RequestBody AddPlanRequest request, HttpServletRequest httpRequest) {
 
         String token = httpRequest.getHeader("Authorization");
@@ -32,12 +31,7 @@ public class PlanController {
         token = token.substring(7);
 
         // jwt 에서 userId 문자열 가져오기
-        String tokenUserId = jwtUtil.extractUserId(token);
-
-        // url 의 userId && jwt 의 userId 일치하는지 체크
-        if (!tokenUserId.equals(userId)) {
-            return ResponseEntity.status(403).body(new AddPlanResponse(false, "Unauthorized user.")); // 403
-        }
+        String userId = jwtUtil.extractUserId(token);
 
         // AddPlanRequest -> PlanDTO 로 변환
         PlanDTO planDTO = new PlanDTO();

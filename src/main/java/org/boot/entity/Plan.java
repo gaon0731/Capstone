@@ -26,7 +26,7 @@ public class Plan {
     @JoinColumn(name = "users_id", nullable = false)
     private User usersId;
 
-    // 학습 분야
+    // 학습 과목
     @Column(name = "study_field", nullable = false)
     private String studyField;
 
