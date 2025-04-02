@@ -74,23 +74,21 @@ public class AuthController {
     }
 
     // AccessToken && RefreshToken 재발급
-    @PostMapping("/refresh")
-    public ResponseEntity<RefreshResponse> refresh(@RequestBody RefreshRequest refreshRequest) {
-        String refreshToken = refreshRequest.getRefreshToken();
+    @PostMapping("/reissue-token")
+    public ResponseEntity<RefreshResponse> refresh(@RequestParam String refreshToken) {
         String userId;
-
         try {
             // RefreshToken 에서 userId 추출
             userId = jwtUtil.parseClaims(refreshToken).getSubject();
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new RefreshResponse(false, "", null, null));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new RefreshResponse(false, "Invalid token.", null, null)); // 401
         }
 
         // DB 에서 저장된 RefreshToken 가져오기
         Optional<String> storedRefreshToken = userService.getRefreshTokenByUserId(userId);
 
         if (storedRefreshToken.isEmpty() || !storedRefreshToken.get().equals(refreshToken)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new RefreshResponse(false, "", null, null));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new RefreshResponse(false, "RefreshToken does not match.", null, null)); // 401
         }
 
         // RefreshToken 이 유효한지 확인
@@ -98,16 +96,16 @@ public class AuthController {
 
         if (isRefreshTokenValid) {
             String newAccessToken = jwtUtil.generateAccessToken(userId);
-            return ResponseEntity.status(HttpStatus.OK).body(new RefreshResponse(true, "", newAccessToken, refreshToken));
+            return ResponseEntity.status(HttpStatus.OK).body(new RefreshResponse(true, "AccessToken has been reissued.", newAccessToken, refreshToken));
         } else {
             JwtDTO newTokens = jwtUtil.generateToken(userId);
 
             userService.updateRefreshToken(userId, newTokens.getRefreshToken());
 
-            return ResponseEntity.status(HttpStatus.OK).body(new RefreshResponse(true, "", newTokens.getAccessToken(), newTokens.getRefreshToken()));
+            return ResponseEntity.status(HttpStatus.OK).body(new RefreshResponse(true, "Both AccessToken and RefreshToken have been reissued.", newTokens.getAccessToken(), newTokens.getRefreshToken()));
         }
-    }
 
+    }
 
     @PostMapping("/logout")
     public ResponseEntity<String> logout(@RequestHeader("Authorization") String bearerToken) {
