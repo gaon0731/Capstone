@@ -9,6 +9,7 @@ import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
 import java.security.Key;
 import java.util.Date;
 
@@ -22,6 +23,26 @@ public class JwtUtil {
     public JwtUtil(@Value("${jwt.secret}") String secretKey) {
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         this.key = Keys.hmacShaKeyFor(keyBytes);
+    }
+
+
+    // User 정보를 가지고 AccessToken 만 생성하는 메서드
+    public String generateAccessToken(String userId) {
+        long now = (new Date()).getTime();
+
+        // Access Token 생성
+        String accessToken = Jwts.builder()
+                .setSubject(userId)
+                .setIssuedAt(new Date(now))
+                .setExpiration(new Date(now + ACCESS_TOKEN_EXPIRE_TIME))
+                .signWith(key, SignatureAlgorithm.HS256)
+                .compact();
+
+
+        // 로그로 토큰을 출력
+        log.info("Access Token: {}", accessToken);
+
+        return accessToken;
     }
 
     // User 정보를 가지고 AccessToken, RefreshToken 을 생성하는 메서드
@@ -76,6 +97,17 @@ public class JwtUtil {
         } catch (ExpiredJwtException e) {
             return e.getClaims();
         }
+    }
+
+    // JWT 토큰에서 userId(= subject) 문자열 추출하는 메서드
+    public String extractUserId(String token) {
+        Claims claims = parseClaims(token);
+        return claims.getSubject();
+    }
+
+    // 로그아웃 시 토큰 블랙리스트에 추가
+    public void blacklistToken(String token) {
+        blacklistedTokens.add(token);
     }
 
 }

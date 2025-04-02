@@ -8,8 +8,10 @@ import lombok.*;
 @AllArgsConstructor
 public class UserDTO {
 
+    private Long usersId;
     private String userId;
     private String userPassword;
     private String userName;
+    private String refreshToken;
 
 }

@@ -66,4 +66,28 @@ public class UserService {
         return true;
     }
 
+
+    // 로그인/ 회원가입 시 RefreshToken 저장
+    public void updateRefreshToken(String userId, String refreshToken) {
+        userRepository.updateRefreshTokenByUserId(userId, refreshToken);
+    }
+
+    // 사용자 ID로 RefreshToken 가져오기
+    public Optional<String> getRefreshTokenByUserId(String userId) {
+        return userRepository.findRefreshTokenByUserId(userId);
+    }
+
+    public boolean deleteUser(String userId) {
+        Optional<User> userOptional = userRepository.findByUserId(userId);
+
+        // 사용자 없음
+        if (userOptional.isEmpty()) {
+            return false;
+        }
+
+        // 사용자 존재 시 삭제
+        userRepository.delete(userOptional.get());
+        return true;
+    }
+
 }

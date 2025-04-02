@@ -30,10 +30,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // 요청 헤더에서 JWT 토큰 추출
         String token = resolveToken(request);
 
-        // 토큰이 존재하고 유효하다면 인증 정보를 설정
-        if (token != null && jwtUtil.validateToken(token)) {
-            Authentication authentication = getAuthentication(token);
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+        if (token != null) {
+            if (jwtUtil.validateToken(token)) {
+                Authentication authentication = getAuthentication(token);
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+            } else {
+                // AccessToken 이 만료됐을 경우 401 Unauthorized 응답
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write("Access token expired");
+                return;
+            }
         }
 
         chain.doFilter(request, response);
