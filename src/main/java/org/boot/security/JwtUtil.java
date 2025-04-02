@@ -28,7 +28,6 @@ public class JwtUtil {
         this.key = Keys.hmacShaKeyFor(keyBytes);
     }
 
-
     // User 정보를 가지고 AccessToken 만 생성하는 메서드
     public String generateAccessToken(String userId) {
         long now = (new Date()).getTime();
@@ -65,6 +64,10 @@ public class JwtUtil {
                 .setExpiration(new Date(now + REFRESH_TOKEN_EXPIRE_TIME))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
+
+        // 로그로 토큰을 출력
+        log.info("Access Token: {}", accessToken);
+        log.info("Refresh Token: {}", refreshToken);
 
         return JwtDTO.builder()
                 .grantType("Bearer")

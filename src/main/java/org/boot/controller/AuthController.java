@@ -75,8 +75,6 @@ public class AuthController {
 
     @PostMapping("/logout")
     public ResponseEntity<String> logout(@RequestHeader("Authorization") String accessToken) {
-        // Authorization 헤더에서 Bearer 토큰을 추출
-
         if (!jwtUtil.validateToken(accessToken)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token.");
         }
