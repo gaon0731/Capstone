@@ -23,6 +23,9 @@ public class PlanService {
 
     private final PlanRepository planRepository;
     private final UserRepository userRepository;
+    private final ToeicRepository toeicRepository;
+    private final EipRepository eipRepository;
+    private final CssdRepository cssdRepository;
     private final UsersToeicRepository usersToeicRepository;
     private final UsersCssdRepository usersCssdRepository;
     private final UsersEipRepository usersEipRepository;
@@ -96,11 +99,11 @@ public class PlanService {
 
     public Integer getTotalStudyTime(String studyField) {
         if ("toeic".equalsIgnoreCase(studyField)) {
-            return planRepository.getToeicTotalStudyTime();
+            return toeicRepository.getTotalStudyTime();
         } else if ("eip".equalsIgnoreCase(studyField)) {
-            return planRepository.getEipTotalStudyTime();
+            return eipRepository.getTotalStudyTime();
         } else if ("cssd".equalsIgnoreCase(studyField)) {
-            return planRepository.getCssdTotalStudyTime();
+            return cssdRepository.getTotalStudyTime();
         }
         return 0;
     }
@@ -161,9 +164,9 @@ public class PlanService {
 
     private List<?> fetchStudyList(String studyField) {
         return switch (studyField.toLowerCase()) {
-            case "toeic" -> planRepository.findAllByOrderByToeicIdAsc();
-            case "eip" -> planRepository.findAllByOrderByEipIdAsc();
-            case "cssd" -> planRepository.findAllByOrderByCssdIdAsc();
+            case "toeic" -> toeicRepository.findAllByOrderByToeicIdAsc();
+            case "eip" -> eipRepository.findAllByOrderByEipIdAsc();
+            case "cssd" -> cssdRepository.findAllByOrderByCssdIdAsc();
             default -> throw new IllegalArgumentException("Invalid studyField: " + studyField);
         };
     }
